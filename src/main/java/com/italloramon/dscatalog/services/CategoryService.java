@@ -3,7 +3,8 @@ package com.italloramon.dscatalog.services;
 import com.italloramon.dscatalog.dto.CategoryDTO;
 import com.italloramon.dscatalog.entities.Category;
 import com.italloramon.dscatalog.repositories.CategoryRepository;
-import com.italloramon.dscatalog.services.exceptions.EntityNotFoundException;
+import com.italloramon.dscatalog.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
-        Category entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+        Category entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
         return new CategoryDTO(entity);
     }
 
@@ -35,5 +36,17 @@ public class CategoryService {
         entity.setName(dto.getName());
         entity = repository.save(entity);
         return new CategoryDTO(entity);
+    }
+
+    @Transactional
+    public CategoryDTO update(Long id, CategoryDTO dto) {
+        try {
+            Category entity = repository.getOne(id);
+            entity.setName(dto.getName());
+            entity = repository.save(entity);
+            return new CategoryDTO(entity);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        }
     }
 }
